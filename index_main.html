@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Google Alerts Notifications</title>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .alert { margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h2>🔔 Google Alert Notifications</h2>
+  <div id="alerts"></div>
+
+  <script>
+    //const feedUrl = 'https://www.google.com/alerts/feeds/02704920146163719092/8954063343678606722'; // Replace with your real feed URL
+
+    const feedUrl = 'https://api-cloud.bitmart.com/spot/v1/ticker?symbol=BTC_USDT'
+
+    fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feedUrl))
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('alerts');
+        data.items.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'alert';
+          div.innerHTML = `<strong>${item.title}</strong><br><a href="${item.link}" target="_blank">Read more</a>`;
+          container.appendChild(div);
+        });
+      })
+      .catch(err => {
+        document.getElementById('alerts').innerText = "Failed to load alerts.";
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
