@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BitMart BTC Price</title>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .alert { margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h2>💰 Live BTC Price on BitMart</h2>
+  <div id="alerts">Loading...</div>
+
+  <script>
+    const url = 'https://api-cloud.bitmart.com/spot/v1/ticker?symbol=BTC_USDT';
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('alerts');
+        const ticker = data.data.tickers[0];
+        container.innerHTML = `
+          <div class="alert">
+            <strong>BTC/USDT Price:</strong> $${ticker.last_price}<br>
+            <strong>24h Volume:</strong> ${ticker.quote_volume_24h}
+          </div>`;
+      })
+      .catch(err => {
+        document.getElementById('alerts').innerText = "Failed to load data.";
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
