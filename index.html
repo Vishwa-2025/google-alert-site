@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Vishwa-BitMart BTC Price - 5 Min Updates</title>
+  <title>BitMart BTC Price - 5 Min Updates</title>
   <meta charset="UTF-8">
   <style>
     body { font-family: Arial; padding: 20px; }
@@ -17,7 +17,8 @@
 
   <script>
     const url = 'https://corsproxy.io/?https://api-cloud.bitmart.com/spot/v1/ticker?symbol=BTC_USDT';
-    const csvFileName = 'Crypto_BTC.csv';
+    const csvData = [["Value", "Volume", "Date", "Time", "Price Difference", "Volume Difference"]];
+    
     let lastPrice = null;
     let lastVolume = null;
 
@@ -51,23 +52,26 @@
           `;
           container.prepend(entry);
 
-          // Write to CSV
-          writeToCSV(ticker.last_price, ticker.quote_volume_24h, dateStr, timeStr, priceDifference, volumeDifference);
+          // Write to CSV in memory
+          csvData.push([ticker.last_price, ticker.quote_volume_24h, dateStr, timeStr, priceDifference, volumeDifference]);
+          saveCSV();
         })
         .catch(err => {
           console.error("Failed to load data:", err);
         });
     }
 
-    function writeToCSV(value, volume, date, time, priceDiff, volumeDiff) {
-      const data = `${value},${volume},${date},${time},${priceDiff},${volumeDiff}\n`;
-      const blob = new Blob([data], { type: 'text/csv' });
-      
-      // Save as a download
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = csvFileName;
+    // Save CSV to memory
+    function saveCSV() {
+      let csvContent = "data:text/csv;charset=utf-8," 
+        + csvData.map(e => e.join(",")).join("\n");
+
+      const link = document.createElement("a");
+      link.setAttribute("href", encodeURI(csvContent));
+      link.setAttribute("download", "Crypto_BTC.csv");
+      document.body.appendChild(link); 
       link.click();
+      document.body.removeChild(link);
     }
 
     // Initial fetch
@@ -75,7 +79,6 @@
 
     // Fetch every 5 minutes (300000 ms)
     setInterval(fetchBTCPrice, 300000);
-
   </script>
 </body>
 </html>
