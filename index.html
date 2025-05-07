@@ -1,35 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>BitMart BTC Price</title>
+  <title>BitMart BTC Price - 5 Min Updates</title>
   <meta charset="UTF-8">
   <style>
     body { font-family: Arial; padding: 20px; }
     .alert { margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+    #alerts { max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
+    .entry { margin-bottom: 10px; }
+    .time-stamp { color: gray; font-size: 0.9em; }
   </style>
 </head>
 <body>
-  <h2>💰 Live BTC Price on BitMart</h2>
+  <h2>💰 Live BTC Price on BitMart (Every 5 Mins)</h2>
   <div id="alerts">Loading...</div>
 
   <script>
-    const url = 'https://api-cloud.bitmart.com/spot/v1/ticker?symbol=BTC_USDT';
+    const url = 'https://corsproxy.io/?https://api-cloud.bitmart.com/spot/v1/ticker?symbol=BTC_USDT';
 
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        const container = document.getElementById('alerts');
-        const ticker = data.data.tickers[0];
-        container.innerHTML = `
-          <div class="alert">
-            <strong>BTC/USDT Price:</strong> $${ticker.last_price}<br>
-            <strong>24h Volume:</strong> ${ticker.quote_volume_24h}
-          </div>`;
-      })
-      .catch(err => {
-        document.getElementById('alerts').innerText = "Failed to load data.";
-        console.error(err);
-      });
+    function fetchBTCPrice() {
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById('alerts');
+          const ticker = data.data.tickers[0];
+          const now = new Date();
+          const timeString = now.toLocaleTimeString();
+          
+          const entry = document.createElement('div');
+          entry.className = 'entry';
+          entry.innerHTML = `
+            <div><strong>BTC/USDT Price:</strong> $${ticker.last_price}</div>
+            <div><strong>24h Volume:</strong> ${ticker.quote_volume_24h}</div>
+            <div class="time-stamp">🕒 Updated at: ${timeString}</div>
+          `;
+
+          // Add new entry to the top
+          container.prepend(entry);
+        })
+        .catch(err => {
+          console.error("Failed to load data:", err);
+        });
+    }
+
+    // Initial fetch
+    fetchBTCPrice();
+
+    // Fetch every 5 minutes (300000 ms)
+    setInterval(fetchBTCPrice, 300000);
   </script>
 </body>
 </html>
