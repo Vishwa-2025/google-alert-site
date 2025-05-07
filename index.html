@@ -18,50 +18,54 @@
   <div id="alerts">Loading...</div>
 
   <script>
-    const url = 'https://corsproxy.io/?https://api-cloud.bitmart.com/spot/v1/ticker?symbol=BTC_USDT';
-    
+    const url = 'https://proxy.cors.sh/https://api-cloud.bitmart.com/spot/v1/ticker?symbol=BTC_USDT';
+
     let lastPrice = null;
     let lastVolume = null;
 
     function fetchBTCPrice() {
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          const container = document.getElementById('alerts');
-          const ticker = data.data.tickers[0];
+      fetch(url, {
+        headers: {
+          'x-cors-api-key': 'temporary_key'
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('alerts');
+        const ticker = data.data.tickers[0];
 
-          // Get the current time in IST
-          const now = new Date();
-          const istTime = now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
-          const [dateStr, timeStr] = istTime.split(", ");
+        // Get the current time in IST
+        const now = new Date();
+        const istTime = now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+        const [dateStr, timeStr] = istTime.split(", ");
 
-          // Calculate differences
-          const priceDifference = lastPrice ? (parseFloat(ticker.last_price) - lastPrice).toFixed(2) : "0.00";
-          const volumeDifference = lastVolume ? (parseFloat(ticker.quote_volume_24h) - lastVolume).toFixed(2) : "0.00";
+        // Calculate differences
+        const priceDifference = lastPrice ? (parseFloat(ticker.last_price) - lastPrice).toFixed(2) : "0.00";
+        const volumeDifference = lastVolume ? (parseFloat(ticker.quote_volume_24h) - lastVolume).toFixed(2) : "0.00";
 
-          // Save last values
-          lastPrice = parseFloat(ticker.last_price);
-          lastVolume = parseFloat(ticker.quote_volume_24h);
+        // Save last values
+        lastPrice = parseFloat(ticker.last_price);
+        lastVolume = parseFloat(ticker.quote_volume_24h);
 
-          // Decide color
-          const priceColor = priceDifference >= 0 ? "positive" : "negative";
-          const volumeColor = volumeDifference >= 0 ? "positive" : "negative";
+        // Decide color
+        const priceColor = priceDifference >= 0 ? "positive" : "negative";
+        const volumeColor = volumeDifference >= 0 ? "positive" : "negative";
 
-          // Append new entry
-          const entry = document.createElement('div');
-          entry.className = 'entry';
-          entry.innerHTML = `
-            <div><strong>BTC/USDT Price:</strong> $${ticker.last_price} 
-              (<span class="${priceColor}">${priceDifference}</span>)</div>
-            <div><strong>24h Volume:</strong> ${ticker.quote_volume_24h} 
-              (<span class="${volumeColor}">${volumeDifference}</span>)</div>
-            <div class="time-stamp">🕒 Updated at (IST): ${dateStr} ${timeStr}</div>
-          `;
-          container.prepend(entry);
-        })
-        .catch(err => {
-          console.error("Failed to load data:", err);
-        });
+        // Append new entry
+        const entry = document.createElement('div');
+        entry.className = 'entry';
+        entry.innerHTML = `
+          <div><strong>BTC/USDT Price:</strong> $${ticker.last_price} 
+            (<span class="${priceColor}">${priceDifference}</span>)</div>
+          <div><strong>24h Volume:</strong> ${ticker.quote_volume_24h} 
+            (<span class="${volumeColor}">${volumeDifference}</span>)</div>
+          <div class="time-stamp">🕒 Updated at (IST): ${dateStr} ${timeStr}</div>
+        `;
+        container.prepend(entry);
+      })
+      .catch(err => {
+        console.error("Failed to load data:", err);
+      });
     }
 
     // Initial fetch
@@ -69,6 +73,7 @@
 
     // Fetch every 1 minute (60000 ms)
     setInterval(fetchBTCPrice, 60000);
-  </script>
+</script>
+
 </body>
 </html>
