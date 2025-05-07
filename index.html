@@ -17,6 +17,9 @@
 
   <script>
     const url = 'https://corsproxy.io/?https://api-cloud.bitmart.com/spot/v1/ticker?symbol=BTC_USDT';
+    const csvFileName = 'Crypto_BTC.csv';
+    let lastPrice = null;
+    let lastVolume = null;
 
     function fetchBTCPrice() {
       fetch(url)
@@ -24,23 +27,47 @@
         .then(data => {
           const container = document.getElementById('alerts');
           const ticker = data.data.tickers[0];
+
+          // Get the current time in IST
           const now = new Date();
-          const timeString = now.toLocaleTimeString();
-          
+          const istTime = now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+          const [dateStr, timeStr] = istTime.split(", ");
+
+          // Calculate differences
+          const priceDifference = lastPrice ? (parseFloat(ticker.last_price) - lastPrice).toFixed(2) : "0.00";
+          const volumeDifference = lastVolume ? (parseFloat(ticker.quote_volume_24h) - lastVolume).toFixed(2) : "0.00";
+
+          // Save last values
+          lastPrice = parseFloat(ticker.last_price);
+          lastVolume = parseFloat(ticker.quote_volume_24h);
+
+          // Append new entry
           const entry = document.createElement('div');
           entry.className = 'entry';
           entry.innerHTML = `
-            <div><strong>BTC/USDT Price:</strong> $${ticker.last_price}</div>
-            <div><strong>24h Volume:</strong> ${ticker.quote_volume_24h}</div>
-            <div class="time-stamp">🕒 Updated at: ${timeString}</div>
+            <div><strong>BTC/USDT Price:</strong> $${ticker.last_price} (Diff: ${priceDifference})</div>
+            <div><strong>24h Volume:</strong> ${ticker.quote_volume_24h} (Diff: ${volumeDifference})</div>
+            <div class="time-stamp">🕒 Updated at (IST): ${dateStr} ${timeStr}</div>
           `;
-
-          // Add new entry to the top
           container.prepend(entry);
+
+          // Write to CSV
+          writeToCSV(ticker.last_price, ticker.quote_volume_24h, dateStr, timeStr, priceDifference, volumeDifference);
         })
         .catch(err => {
           console.error("Failed to load data:", err);
         });
+    }
+
+    function writeToCSV(value, volume, date, time, priceDiff, volumeDiff) {
+      const data = `${value},${volume},${date},${time},${priceDiff},${volumeDiff}\n`;
+      const blob = new Blob([data], { type: 'text/csv' });
+      
+      // Save as a download
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = csvFileName;
+      link.click();
     }
 
     // Initial fetch
@@ -48,6 +75,7 @@
 
     // Fetch every 5 minutes (300000 ms)
     setInterval(fetchBTCPrice, 300000);
+
   </script>
 </body>
 </html>
